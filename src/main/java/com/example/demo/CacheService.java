@@ -30,6 +30,7 @@ public class CacheService {
                 armazenarCache(chaveControle, data);
                 return data;
             } else {
+                logger.info("### obtendo dados do REDIS {}: ", cachedData.toString());
                 return cachedData;
             }
 
@@ -51,33 +52,37 @@ public class CacheService {
     }
 
 
-    public synchronized CacheData verificarExistenciaECache2(String chaveControle) {
-
+    public CacheData verificarExistenciaECache2(String chaveControle) {
         try {
-
+            // Tenta obter o cache existente
             CacheData cachedData = (CacheData) redisTemplate.opsForValue().get(chaveControle);
-        
-            if (cachedData == null) {
-                var data = new CacheData(chaveControle, UUID.randomUUID().toString());
-                if (redisTemplate.opsForValue().setIfAbsent(chaveControle, data)) {
-                    logger.info("### Gerando novo cache v2 {} ", UUID.randomUUID().toString());
-                    redisTemplate.expire(chaveControle, CACHE_EXPIRATION_TIME, TimeUnit.SECONDS);
-                    return data;
-                } else {
-                    // Outra thread inseriu os dados antes desta, obtendo os dados atualizados do cache
-                    return (CacheData) redisTemplate.opsForValue().get(chaveControle);
-                }
-            } else {
+    
+            if (cachedData != null) {
+                logger.info("### Recuperando dados do Cache {}: ", cachedData.toString());
+                // Cache já existe
                 return cachedData;
             }
-            
+    
+            // Cria novos dados de cache
+            CacheData newData = new CacheData(chaveControle, UUID.randomUUID().toString());
+    
+            // Tenta definir o novo cache se não existir
+            Boolean isSet = redisTemplate.opsForValue().setIfAbsent(chaveControle, newData);
+    
+            if (Boolean.TRUE.equals(isSet)) {
+                logger.info("### Gerando novo cache: {} ", newData.toString());
+                redisTemplate.expire(chaveControle, CACHE_EXPIRATION_TIME, TimeUnit.SECONDS);
+                return newData;
+            } else {
+                // Se o cache foi setado por outra thread antes
+                return (CacheData) redisTemplate.opsForValue().get(chaveControle);
+            }
+    
         } catch (Exception e) {
             throw new RedisOperationException("Erro ao recuperar dados do Redis: " + e.getMessage(), e);
         }
-
-        
-        
     }
+    
 
 
     @Cacheable(value = "cacheData", key = "#chaveControle")
