@@ -40,9 +40,11 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 ## Performance
 
 1. Usando HEY: hey -z 10s http://localhost:8080/api/v1/cache?key=teste
-
 ![alt text](image.png)
 
 
 2. Apache Bench
 ![alt text](image-1.png)
+
+3. VisualVM
+![alt text](image-2.png)
