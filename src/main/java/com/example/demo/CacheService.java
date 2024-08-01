@@ -2,7 +2,6 @@ package com.example.demo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -16,8 +15,12 @@ public class CacheService {
     private static Logger logger = LoggerFactory.getLogger(CacheService.class);
     private static final long CACHE_EXPIRATION_TIME = 10; // Tempo de expiração do cache em minutos
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    public CacheService(final RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
 
     public CacheData verificarExistenciaECache(String chaveControle) {
 
