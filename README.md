@@ -10,7 +10,7 @@ Este é um exemplo simples de integração do Spring Boot com o Redis, demonstra
 
 ## Pré-requisitos
 
-- JDK 8 ou superior
+- JDK 21 ou superior
 - Maven
 - Redis Server (pode ser executado localmente ou em um servidor remoto)
 
@@ -35,3 +35,14 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir problemas ou env
 ## Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+
+## Performance
+
+1. Usando HEY: hey -z 10s http://localhost:8080/api/v1/cache?key=teste
+
+![alt text](image.png)
+
+
+2. Apache Bench
+![alt text](image-1.png)

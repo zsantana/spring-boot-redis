@@ -16,12 +16,6 @@ public class CacheService {
     private static Logger logger = LoggerFactory.getLogger(CacheService.class);
     private static final long CACHE_EXPIRATION_TIME = 10; // Tempo de expiração do cache em minutos
 
-    static class RedisOperationException extends RuntimeException {
-        public RedisOperationException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -40,7 +34,7 @@ public class CacheService {
             }
 
         } catch (Exception e) {
-            throw new RedisOperationException("Erro ao recuperar dados do Redis: " + e.getMessage(), e);
+            throw new RedisOperationException("### (verificarExistenciaECache) Erro ao recuperar dados do Redis: " + e.getMessage(), e);
         }
         
         
@@ -51,7 +45,7 @@ public class CacheService {
         try {
             redisTemplate.opsForValue().set(chaveControle, data, CACHE_EXPIRATION_TIME, TimeUnit.SECONDS);
         } catch (Exception e) {
-            throw new RedisOperationException("Erro ao armazenar dados do Redis: " + e.getMessage(), e);
+            throw new RedisOperationException("### Erro ao armazenar dados do Redis: " + e.getMessage(), e);
         }
         
     }

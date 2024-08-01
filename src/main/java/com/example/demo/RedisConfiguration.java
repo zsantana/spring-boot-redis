@@ -2,6 +2,8 @@ package com.example.demo;
 
 import java.time.Duration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -13,15 +15,20 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisClientConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 @Configuration
 @EnableCaching
+@EnableRedisRepositories
 public class RedisConfiguration {
+
+    private static final Logger logger = LoggerFactory.getLogger(RedisConfiguration.class);
 
     @Value("${cache.ttl.seconds}")
     private long ttlSeconds;
@@ -61,25 +68,31 @@ public class RedisConfiguration {
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
-        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisHost, redisPort);
-        redisStandaloneConfiguration.setDatabase(0);
+        try {
+            RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisHost, redisPort);
+            redisStandaloneConfiguration.setDatabase(0);
 
-        JedisPoolConfig poolConfig = new JedisPoolConfig();
-        // poolConfig.setMaxTotal(128);
-        // poolConfig.setMaxIdle(128);
-        // poolConfig.setMinIdle(16);
-        // poolConfig.setTestOnBorrow(true);
-        // poolConfig.setTestOnReturn(true);
-        // poolConfig.setTestWhileIdle(true);
-        // poolConfig.setNumTestsPerEvictionRun(3);
-        // poolConfig.setBlockWhenExhausted(true);
+            JedisPoolConfig poolConfig = new JedisPoolConfig();
+            
+            // poolConfig.setMaxTotal(128);
+            // poolConfig.setMaxIdle(128);
+            // poolConfig.setMinIdle(16);
+            // poolConfig.setTestOnBorrow(true);
+            // poolConfig.setTestOnReturn(true);
+            // poolConfig.setTestWhileIdle(true);
+            // poolConfig.setNumTestsPerEvictionRun(3);
+            // poolConfig.setBlockWhenExhausted(true);
 
-        JedisClientConfiguration jedisClientConfiguration = JedisClientConfiguration.builder()
-                .connectTimeout(Duration.ofMillis(redisTimeout))
-                .usePooling()
-                .poolConfig(poolConfig)
-                .build();
+            JedisClientConfiguration jedisClientConfiguration = JedisClientConfiguration.builder()
+                    .connectTimeout(Duration.ofMillis(redisTimeout))
+                    .usePooling()
+                    .poolConfig(poolConfig)
+                    .build();
 
-        return new JedisConnectionFactory(redisStandaloneConfiguration, jedisClientConfiguration);
+            return new JedisConnectionFactory(redisStandaloneConfiguration, jedisClientConfiguration);
+        } catch (Exception e) {
+            logger.error("### Failed to create JedisConnectionFactory", e);
+            throw new JedisConnectionException("Could not create JedisConnectionFactory", e);
+        }
     }
 }
